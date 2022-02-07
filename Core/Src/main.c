@@ -59,8 +59,6 @@ SDRAM_HandleTypeDef hsdram1;
 
 /* USER CODE BEGIN PV */
 
-extern uint8_t *MoorePtr;
-
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -135,7 +133,6 @@ int main(void)
   BSP_LCD_SelectLayer(LCD_FOREGROUND_LAYER);
   BSP_LCD_Clear(LCD_COLOR_GREEN);
 	BSP_LCD_DisplayOn();
-	BSP_LCD_DrawBitmap(0, 0, MoorePtr);
 
 
   /* USER CODE END 2 */
