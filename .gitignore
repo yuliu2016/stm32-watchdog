@@ -1,0 +1,7 @@
+.vscode/
+Debug/
+.settings
+Middlewares/
+.history/
+build/
+STM32Make.make
