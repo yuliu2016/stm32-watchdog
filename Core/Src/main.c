@@ -21,7 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "watchdog.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -134,8 +134,14 @@ int main(void)
   BSP_LCD_LayerDefaultInit(LCD_BACKGROUND_LAYER, LCD_FRAME_BUFFER);
   BSP_LCD_LayerDefaultInit(LCD_FOREGROUND_LAYER, LCD_FRAME_BUFFER);
   BSP_LCD_SelectLayer(LCD_FOREGROUND_LAYER);
-  BSP_LCD_Clear(LCD_COLOR_GREEN);
+  BSP_LCD_Clear(LCD_COLOR_BLACK);
 	BSP_LCD_DisplayOn();
+
+  // Starting Screen
+  BSP_LCD_SetTextColor(LCD_COLOR_RED);
+  BSP_LCD_DisplayStringAtLine(2, (uint8_t *) "System has been reset");
+  BSP_LCD_SetTextColor(LCD_COLOR_BLUE);
+  BSP_LCD_DisplayStringAtLine(4, (uint8_t *) "Press USER to start watchdog");
 
 
   /* USER CODE END 2 */
@@ -147,16 +153,6 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-//    BSP_LCD_Clear(LCD_COLOR_RED);
-//    BSP_LCD_SetTextColor(LCD_COLOR_DARKGRAY);
-//    BSP_LCD_DisplayStringAtLine(1, (uint8_t *) "test 1");
-//    BSP_LCD_SetTextColor(LCD_COLOR_RED);
-//    BSP_LCD_DisplayStringAtLine(2, (uint8_t *) "test 2");
-//    BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
-//    BSP_LCD_DisplayStringAtLine(3, (uint8_t *) "test 3");
-//    BSP_LCD_SetTextColor(LCD_COLOR_GREEN);
-//    BSP_LCD_DisplayStringAtLine(4, (uint8_t *) "test 4");
-//    HAL_Delay(1000);
   }
   /* USER CODE END 3 */
 }
@@ -623,6 +619,21 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   if (htim == &htim10) {
     HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
+  }
+}
+
+void
+HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+  if (GPIO_Pin == KEY_BUTTON_PIN) {
+    // user button has been pushed; start watchdog
+    Watchdog_Init(1000);
+    BSP_LCD_Clear(LCD_COLOR_WHITE);
+    return;
+  }
+
+  if (GPIO_Pin == GPIO_PIN_1) {
+    Watchdog_Refresh();
   }
 }
 

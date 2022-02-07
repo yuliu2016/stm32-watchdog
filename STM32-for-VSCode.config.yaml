@@ -6,7 +6,7 @@
 # - entry_2
 
 # The project name
-target: periph429
+target: watchdog
 # Can be C or C++
 language: C
 
