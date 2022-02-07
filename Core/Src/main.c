@@ -22,6 +22,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "watchdog.h"
+#include "stdio.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -121,10 +122,6 @@ int main(void)
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
 
-
-  if (HAL_TIM_Base_Start_IT(&htim10) != HAL_OK) {
-    Error_Handler();
-  }
   
   // Initialize the push button with EXTI
   BSP_PB_Init(BUTTON_KEY, BUTTON_MODE_EXTI);
@@ -477,7 +474,7 @@ static void MX_TIM10_Init(void)
 
   /* USER CODE END TIM10_Init 1 */
   htim10.Instance = TIM10;
-  htim10.Init.Prescaler = 9000 - 1;
+  htim10.Init.Prescaler = 1800 - 1;
   htim10.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim10.Init.Period = 10000 - 1;
   htim10.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -615,10 +612,17 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
+static int elapsedCounter = 0;
+static char elapsedStr[20];
+
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   if (htim == &htim10) {
-    HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
+    elapsedCounter++;
+
+    float seconds = elapsedCounter / (10.0);
+    sprintf(elapsedStr, "%f", seconds);
+    BSP_LCD_DisplayStringAtLine(3, (uint8_t *) elapsedStr);
   }
 }
 
@@ -629,6 +633,8 @@ HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
     // user button has been pushed; start watchdog
     Watchdog_Init(1000);
     BSP_LCD_Clear(LCD_COLOR_WHITE);
+    BSP_LCD_SetTextColor(LCD_COLOR_GREEN);
+    HAL_TIM_Base_Start_IT(&htim10);
     return;
   }
 
