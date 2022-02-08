@@ -616,7 +616,7 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 
 static int elapsedCounter = 0;
-static char elapsedStr[20];
+static char elapsedStr[24];
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {

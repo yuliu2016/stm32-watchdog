@@ -59,10 +59,6 @@ Watchdog_Init(uint32_t expirationMs)
     return HAL_ERROR;
   }
 
-  // Set flag to disable the watchdog during CPU halt
-  // (Section 33.16.4 - APB1_FZ register)
-  __HAL_DBGMCU_FREEZE_IWDG();
-
   // Enable the watchdog. Turns on the LSI 32kHz clock
   IWDG->KR = 0x0000CCCCu;
 
