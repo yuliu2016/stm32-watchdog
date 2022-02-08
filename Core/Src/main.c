@@ -136,9 +136,12 @@ int main(void)
 
   // Starting Screen
   BSP_LCD_SetTextColor(LCD_COLOR_RED);
-  BSP_LCD_DisplayStringAtLine(2, (uint8_t *) "System has been reset");
+  BSP_LCD_DisplayStringAtLine(1, (uint8_t *) "Board has been");
+  BSP_LCD_DisplayStringAtLine(2, (uint8_t *) "reset");
   BSP_LCD_SetTextColor(LCD_COLOR_BLUE);
-  BSP_LCD_DisplayStringAtLine(4, (uint8_t *) "Press USER to start watchdog");
+  BSP_LCD_DisplayStringAtLine(4, (uint8_t *) "Press USER to");
+  BSP_LCD_DisplayStringAtLine(5, (uint8_t *) "start watchdog");
+
 
 
   /* USER CODE END 2 */
@@ -620,8 +623,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   if (htim == &htim10) {
     elapsedCounter++;
 
-    float seconds = elapsedCounter / (10.0);
-    sprintf(elapsedStr, "%f", seconds);
+    int seconds = elapsedCounter / 10;
+    int tenths = elapsedCounter % 10;
+    sprintf(elapsedStr, "Elapsed: %d.%d", seconds, tenths);
     BSP_LCD_DisplayStringAtLine(3, (uint8_t *) elapsedStr);
   }
 }
@@ -630,16 +634,18 @@ void
 HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
   if (GPIO_Pin == KEY_BUTTON_PIN) {
+    HAL_GPIO_TogglePin(LD4_GPIO_Port, LD4_Pin);
     // user button has been pushed; start watchdog
     Watchdog_Init(1000);
-    BSP_LCD_Clear(LCD_COLOR_WHITE);
-    BSP_LCD_SetTextColor(LCD_COLOR_GREEN);
+    BSP_LCD_Clear(LCD_COLOR_LIGHTBLUE);
+    BSP_LCD_SetTextColor(LCD_COLOR_RED);
     HAL_TIM_Base_Start_IT(&htim10);
     return;
   }
 
   if (GPIO_Pin == GPIO_PIN_1) {
     Watchdog_Refresh();
+    HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
   }
 }
 
