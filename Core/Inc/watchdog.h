@@ -3,22 +3,10 @@
 
 #include "stm32f4xx_hal.h"
 
-static HAL_StatusTypeDef
-Watchdog_SetExpiration(uint32_t expirationMs)
-{
-  return HAL_OK;
-}
+HAL_StatusTypeDef Watchdog_Init(uint32_t expirationMs);
 
-static HAL_StatusTypeDef
-Watchdog_Init(uint32_t expirationMs)
-{
-  return Watchdog_SetExpiration(expirationMs);
-}
+HAL_StatusTypeDef Watchdog_SetExpiration(uint32_t expirationMs);
 
-
-static void Watchdog_Refresh()
-{
-  // IWDG->KR = 0x0000AAAAu;
-}
+void Watchdog_Refresh();
 
 #endif
