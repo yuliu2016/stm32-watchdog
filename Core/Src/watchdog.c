@@ -12,6 +12,19 @@
 // Section 25: Independent Watchdog
 
 
+// The watchdog operates on the independent LSI clock (internal 
+// low speed oscillator) at 32kHz
+
+
+// Configuration Procedure (Section 25.3.2):
+// 1. Enable the IWDG by writing 0x0000 CCCC in the IWDG_KR register.
+// 2. Enable register access by writing 0x0000 5555 in the IWDG_KR register.
+// 3. Write the IWDG prescaler by programming IWDG_PR from 0 to 7.
+// 4. Write the reload register (IWDG_RLR).
+// 5. Wait for the registers to be updated (IWDG_SR = 0x0000 0000).
+// 6. Refresh the counter value with IWDG_RLR (IWDG_KR = 0x0000 AAAA)
+
+
 
 // Maximum allowed expiration time in ms
 // = (max reload) * (max prescaler) * 1000 / (LSI clock speed)
@@ -28,9 +41,14 @@
 #define STATUS_TIMEOUT 48
 
 
-// Initialize the watchdog
-// Watchdog is started immediately, so Watchdog_Refresh()
-// must be called within expirationMs
+/**
+ * @brief Initialize the onboard independent watchdog.
+ * The watchdog is started immediately on success, and
+ * must be refreshed within the expiration time.
+ * 
+ * @param expirationMs time until the watchdog expires
+ * @return HAL_OK if configured correctly
+ */
 HAL_StatusTypeDef
 Watchdog_Init(uint32_t expirationMs)
 {
@@ -42,7 +60,8 @@ Watchdog_Init(uint32_t expirationMs)
   }
 
   // Set flag to disable the watchdog during CPU halt
-  __HAL_DBGMCU_UNFREEZE_IWDG();
+  // (Section 33.16.4 - APB1_FZ register)
+  __HAL_DBGMCU_FREEZE_IWDG();
 
   // Enable the watchdog. Turns on the LSI 32kHz clock
   IWDG->KR = 0x0000CCCCu;
@@ -53,8 +72,14 @@ Watchdog_Init(uint32_t expirationMs)
 
 
 
-// Set the expiration time of the watchdog
-// Watchdog is reset immediately on success
+/**
+ * @brief Set the expiration time of the watchdog. 
+ * The watchdog is reset immediately on success, and
+ * must be refreshed within the new expiration time.
+ * 
+ * @param expirationMs time until the watchdog expires
+ * @return HAL_OK if configured correctly
+ */
 HAL_StatusTypeDef
 Watchdog_SetExpiration(uint32_t expirationMs)
 {
@@ -69,8 +94,13 @@ Watchdog_SetExpiration(uint32_t expirationMs)
   uint32_t prescaler = 3;
   uint32_t reload = expirationMs;
 
-  // Increase prescaler if expiration time is too big
-  // to fit in the reload register
+  // Increase prescaler if expiration time is too high
+  // to fit in the reload register.
+  // Section 25.4.2 - prescaler values:
+  // - 3: divider /32
+  // - 4: divider /64
+  // - 5: divider /128
+  // - 6: divider /256
   while (reload > 4095) {
     prescaler += 1;
     reload >>= 1;
@@ -99,7 +129,7 @@ Watchdog_SetExpiration(uint32_t expirationMs)
   }
 
   // Refresh the watchdog with the new reload register
-  // This re-enables register protection
+  // and re-enable register write protection
   Watchdog_Refresh();
 
   return HAL_OK;
@@ -107,9 +137,11 @@ Watchdog_SetExpiration(uint32_t expirationMs)
 
 
 
-// Set the key register to 0xAAAA to reset the timer counter
-// to the value in the reload register and prevent a reset.
-// Must be called within the expiration time.
+/**
+ * @brief Set the key register to 0xAAAA to reset the timer counter
+ * to the value in the reload register and prevent a system reset.
+ * Must be called within the expiration time.
+ */
 void 
 Watchdog_Refresh()
 {
